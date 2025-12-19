@@ -1,0 +1,56 @@
+name: CD - Demo Deploy (No Real Server)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to deploy (e.g. latest or SHA)"
+        required: false
+        default: latest
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-backend
+  SERVICE_PORT: "3001"
+
+jobs:
+  demo-deploy:
+    name: Show Deployment Plan
+    runs-on: ubuntu-latest
+    environment:
+      name: demo
+    steps:
+      - name: Display deploy instructions
+        run: |
+          echo "=== Deployment Demo ==="
+          echo "This job illustrates a typical Docker-based deploy."
+          echo "No real server is contacted."
+          echo
+          echo "Pull and run on a Linux server with Docker:" 
+          echo "  docker login $REGISTRY -u $GITHUB_ACTOR -p <YOUR_GITHUB_TOKEN>"
+          echo "  docker pull $REGISTRY/$IMAGE_NAME:${{ github.event.inputs.image_tag }}"
+          echo "  docker stop backend || true && docker rm backend || true"
+          echo "  docker run -d --name backend -p 3001:3001 \\\" 
+          echo "    -e PORT=$SERVICE_PORT \\\" 
+          echo "    -e MONGODB_URI=<your_mongodb_uri> \\\" 
+          echo "    $REGISTRY/$IMAGE_NAME:${{ github.event.inputs.image_tag }}"
+          echo
+          echo "Optional: Switch to a real SSH deploy by enabling the SSH step and adding secrets: SSH_HOST, SSH_USER, SSH_KEY, MONGODB_URI"
+
+      # Example template for real SSH deploy (disabled on purpose)
+      - name: Example SSH deploy (disabled)
+        if: ${{ false }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker login $REGISTRY -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            docker pull $REGISTRY/$IMAGE_NAME:${{ github.event.inputs.image_tag }}
+            docker stop backend || true
+            docker rm backend || true
+            docker run -d --name backend -p 3001:3001 \
+              -e PORT=$SERVICE_PORT \
+              -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
+              $REGISTRY/$IMAGE_NAME:${{ github.event.inputs.image_tag }}
