@@ -1,0 +1,16 @@
+//-------------------------------
+BE:
+  -Create: tuổi là số nguyên, email duy nhất
+    => check tuổi đầu vào nếu không phải số nguyên hay là 1 số nhỏ hơn 0 thì trả về lỗi res.status(400).json({ error: 'Age must be a non-negative number' });
+       Tìm email đầu vào trog db, nếu đã tồn tại email rồi thì trả về lỗi res.status(400).json({ error: `Email ${email} already exists` });
+
+  - Get:  Sử dụng Promise.all cho truy vấn song song (find và countDocument)
+    =>  [users, totalCount] = await Promise.all([await User.find().skip(skip).limit(limit).lean(), await User.countDocuments()]);
+
+//-------------------------------
+FE:
+  -Số thứ tự tăng theo page, thay vì bắt đầu lại ở mỗi page
+    => Truyền props gape và limit vào trong component Table, => Từ đó render ra cột STT bằng công thức index + 1 + (page-1)*limit
+  -Chuẩn hóa dữ liệu đầu vào trước khi gửi Backend (loại bỏ khoảng trắng)
+    => Ở hàm submit, trước khi gửi data lên cho be thì dùng trim() để loại bỏ khoảng trắng của ccas trường nhập text, còn trường tuổi thì dùng hàm Number để biến nó thành number
+//-------------------------------
